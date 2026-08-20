@@ -1,0 +1,411 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONSULTATION_SCHEDULED
+  ESTIMATE_SENT
+  FOLLOW_UP
+  APPROVED
+  SCHEDULED
+  COMPLETED
+  LOST
+}
+
+enum AppointmentType {
+  CONSULTATION
+  FOLLOW_UP
+  JOB_VISIT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum QuoteItemType {
+  LABOR
+  MATERIAL
+  OPTIONAL
+}
+
+enum JobStatus {
+  SCHEDULED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum JobLineItemType {
+  LABOR
+  MATERIAL
+}
+
+enum JobPhotoPhase {
+  BEFORE
+  DURING
+  AFTER
+}
+
+enum InvoiceType {
+  DEPOSIT
+  PARTIAL
+  FINAL
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  VOID
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  NEW_BOOKING
+  BOOKING_CONFIRMATION
+  APPOINTMENT_REMINDER
+  APPOINTMENT_CANCELLATION
+  QUOTE_SENT
+  QUOTE_ACCEPTED
+  PAYMENT_RECEIVED
+  JOB_COMPLETED
+  REVIEW_REQUEST
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+enum ServiceQuestionFieldType {
+  TEXT
+  NUMBER
+  SELECT
+  BOOLEAN
+  TEXTAREA
+}
+
+model AdminUser {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  leadNotes    LeadNote[]
+  auditLogs    AuditLog[]
+}
+
+model BusinessSettings {
+  id                             String   @id @default(cuid())
+  name                           String
+  logoUrl                        String?
+  phone                          String
+  email                          String
+  addressStreet                  String
+  addressCity                    String
+  addressState                   String
+  addressZip                     String
+  taxRate                        Decimal  @default(0) @db.Decimal(5, 4)
+  depositPercent                 Decimal  @default(0) @db.Decimal(5, 4)
+  defaultAppointmentDurationMin  Int      @default(60)
+  serviceAreaZips                String[]
+  facebookUrl                    String?
+  instagramUrl                   String?
+  updatedAt                      DateTime @updatedAt
+}
+
+model BusinessHours {
+  id        String  @id @default(cuid())
+  dayOfWeek Int
+  openTime  String
+  closeTime String
+  isClosed  Boolean @default(false)
+
+  @@unique([dayOfWeek])
+}
+
+model BlockedTime {
+  id        String   @id @default(cuid())
+  start     DateTime
+  end       DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  description String
+  icon        String?
+  active      Boolean           @default(true)
+  sortOrder   Int               @default(0)
+  questions   ServiceQuestion[]
+  leads       Lead[]
+}
+
+model ServiceQuestion {
+  id        String                    @id @default(cuid())
+  serviceId String
+  service   Service                   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  label     String
+  fieldType ServiceQuestionFieldType
+  options   Json?
+  required  Boolean                   @default(false)
+  sortOrder Int                       @default(0)
+}
+
+model Customer {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String
+  email         String
+  addressStreet String?
+  addressCity   String?
+  addressState  String?
+  addressZip    String?
+  createdAt     DateTime @default(now())
+  leads         Lead[]
+  jobs          Job[]
+  reviews       Review[]
+}
+
+model Lead {
+  id           String        @id @default(cuid())
+  bookingRef   String        @unique
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  serviceId    String
+  service      Service       @relation(fields: [serviceId], references: [id])
+  status       LeadStatus    @default(NEW)
+  budgetMin    Decimal?      @db.Decimal(10, 2)
+  budgetMax    Decimal?      @db.Decimal(10, 2)
+  notes        String?
+  source       String        @default("website")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  project      Project?
+  appointments Appointment[]
+  quotes       Quote[]
+  leadNotes    LeadNote[]
+  jobs         Job[]
+}
+
+model Project {
+  id                String   @id @default(cuid())
+  leadId            String   @unique
+  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  description       String?
+  answers           Json     @default("{}")
+  addressStreet     String?
+  addressCity       String?
+  addressState      String?
+  addressZip        String?
+  withinServiceArea Boolean?
+  budgetMin         Decimal? @db.Decimal(10, 2)
+  budgetMax         Decimal? @db.Decimal(10, 2)
+  status            String   @default("draft")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  photos            ProjectPhoto[]
+}
+
+model ProjectPhoto {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url        String
+  caption    String?
+  uploadedAt DateTime @default(now())
+}
+
+model LeadNote {
+  id          String    @id @default(cuid())
+  leadId      String
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+  body        String
+  createdAt   DateTime  @default(now())
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  leadId    String
+  lead      Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type      AppointmentType
+  start     DateTime
+  end       DateTime
+  status    AppointmentStatus @default(SCHEDULED)
+  notes     String?
+  createdAt DateTime          @default(now())
+}
+
+model Quote {
+  id            String      @id @default(cuid())
+  leadId        String
+  lead          Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  status        QuoteStatus @default(DRAFT)
+  subtotal      Decimal     @default(0) @db.Decimal(10, 2)
+  discount      Decimal     @default(0) @db.Decimal(10, 2)
+  tax           Decimal     @default(0) @db.Decimal(10, 2)
+  depositAmount Decimal     @default(0) @db.Decimal(10, 2)
+  total         Decimal     @default(0) @db.Decimal(10, 2)
+  publicToken   String      @unique @default(cuid())
+  sentAt        DateTime?
+  viewedAt      DateTime?
+  respondedAt   DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime    @default(now())
+  items         QuoteItem[]
+  jobs          Job[]
+}
+
+model QuoteItem {
+  id          String        @id @default(cuid())
+  quoteId     String
+  quote       Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  type        QuoteItemType
+  description String
+  quantity    Decimal       @db.Decimal(10, 2)
+  unitPrice   Decimal       @db.Decimal(10, 2)
+  isOptional  Boolean       @default(false)
+  isIncluded  Boolean       @default(true)
+  sortOrder   Int           @default(0)
+}
+
+model Job {
+  id             String        @id @default(cuid())
+  quoteId        String?
+  quote          Quote?        @relation(fields: [quoteId], references: [id])
+  leadId         String
+  lead           Lead          @relation(fields: [leadId], references: [id])
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  status         JobStatus     @default(SCHEDULED)
+  scopeOfWork    String
+  addressStreet  String
+  addressCity    String
+  addressState   String
+  addressZip     String
+  startDate      DateTime?
+  completionDate DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  photos         JobPhoto[]
+  lineItems      JobLineItem[]
+  invoices       Invoice[]
+  reviews        Review[]
+}
+
+model JobPhoto {
+  id        String        @id @default(cuid())
+  jobId     String
+  job       Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  url       String
+  phase     JobPhotoPhase
+  caption   String?
+  createdAt DateTime      @default(now())
+}
+
+model JobLineItem {
+  id          String          @id @default(cuid())
+  jobId       String
+  job         Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  type        JobLineItemType
+  description String
+  quantity    Decimal         @db.Decimal(10, 2)
+  unitPrice   Decimal         @db.Decimal(10, 2)
+  total       Decimal         @db.Decimal(10, 2)
+  createdAt   DateTime        @default(now())
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  jobId       String
+  job         Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  type        InvoiceType
+  amount      Decimal       @db.Decimal(10, 2)
+  dueDate     DateTime?
+  status      InvoiceStatus @default(UNPAID)
+  publicToken String        @unique @default(cuid())
+  createdAt   DateTime      @default(now())
+  payments    Payment[]
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  invoiceId             String
+  invoice               Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount                Decimal       @db.Decimal(10, 2)
+  method                String        @default("card")
+  stripePaymentIntentId String?       @unique
+  status                PaymentStatus @default(PENDING)
+  paidAt                DateTime?
+  createdAt             DateTime      @default(now())
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  rating      Int
+  body        String
+  projectType String
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id                String             @id @default(cuid())
+  type              NotificationType
+  recipientEmail    String
+  subject           String
+  body              String
+  relatedEntityType String?
+  relatedEntityId   String?
+  status            NotificationStatus @default(QUEUED)
+  sentAt            DateTime?
+  createdAt         DateTime           @default(now())
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+}
