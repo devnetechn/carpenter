@@ -92,6 +92,7 @@ describe("submitBookingAction", () => {
     });
     expect(lead?.project?.withinServiceArea).toBe(true);
     expect(lead?.project?.status).toBe("submitted");
+    expect(lead?.preferredContact).toBe("EMAIL");
     expect(lead?.appointments).toHaveLength(1);
 
     const notifications = await prisma.notification.findMany({

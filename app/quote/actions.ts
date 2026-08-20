@@ -78,6 +78,7 @@ export async function submitBookingAction(input: SubmitBookingInput) {
           source: "website",
           budgetMin: data.budgetMin,
           budgetMax: data.budgetMax,
+          preferredContact: data.preferredContact,
         },
       });
 
