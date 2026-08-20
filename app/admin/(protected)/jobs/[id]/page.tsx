@@ -7,6 +7,7 @@ import { JobLineItems } from "@/components/admin/job-line-items";
 import { JobPhotos } from "@/components/admin/job-photos";
 import { JobFeaturedToggle } from "@/components/admin/job-featured-toggle";
 import { JobInvoices } from "@/components/admin/job-invoices";
+import { SendReviewRequestButton } from "@/components/admin/send-review-request-button";
 
 export default async function JobDetailPage({
   params,
@@ -74,7 +75,10 @@ export default async function JobDetailPage({
             </Link>
           </p>
         </div>
-        <JobStatusForm jobId={job.id} currentStatus={job.status} />
+        <div className="flex items-center gap-3">
+          {job.status === "COMPLETED" && <SendReviewRequestButton jobId={job.id} />}
+          <JobStatusForm jobId={job.id} currentStatus={job.status} />
+        </div>
       </div>
 
       <section>
