@@ -6,6 +6,7 @@ import { JobInfoForm } from "@/components/admin/job-info-form";
 import { JobLineItems } from "@/components/admin/job-line-items";
 import { JobPhotos } from "@/components/admin/job-photos";
 import { JobFeaturedToggle } from "@/components/admin/job-featured-toggle";
+import { JobInvoices } from "@/components/admin/job-invoices";
 
 export default async function JobDetailPage({
   params,
@@ -20,6 +21,10 @@ export default async function JobDetailPage({
       lead: { include: { customer: true } },
       lineItems: { orderBy: { createdAt: "asc" } },
       photos: { orderBy: { createdAt: "asc" } },
+      invoices: {
+        include: { payments: { orderBy: { createdAt: "asc" } } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 
@@ -39,6 +44,22 @@ export default async function JobDetailPage({
     url: p.url,
     phase: p.phase,
     caption: p.caption,
+  }));
+
+  const invoiceViews = job.invoices.map((inv) => ({
+    id: inv.id,
+    type: inv.type,
+    amount: inv.amount.toString(),
+    status: inv.status,
+    dueDate: inv.dueDate ? inv.dueDate.toLocaleDateString() : null,
+    publicToken: inv.publicToken,
+    payments: inv.payments.map((p) => ({
+      id: p.id,
+      amount: p.amount.toString(),
+      method: p.method,
+      status: p.status,
+      paidAt: p.paidAt ? p.paidAt.toLocaleDateString() : null,
+    })),
   }));
 
   return (
@@ -87,6 +108,13 @@ export default async function JobDetailPage({
         <h2 className="text-sm font-semibold uppercase text-muted-foreground">Photos</h2>
         <div className="mt-2">
           <JobPhotos jobId={job.id} photos={photoViews} />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-semibold uppercase text-muted-foreground">Invoices</h2>
+        <div className="mt-2">
+          <JobInvoices jobId={job.id} invoices={invoiceViews} />
         </div>
       </section>
     </div>
