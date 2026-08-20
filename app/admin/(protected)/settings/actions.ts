@@ -36,9 +36,11 @@ export async function addBlockedTime(formData: FormData) {
 
   await prisma.blockedTime.create({ data: { start, end, reason } });
   revalidatePath("/admin/settings");
+  revalidatePath("/admin/calendar");
 }
 
 export async function removeBlockedTime(id: string) {
   await prisma.blockedTime.delete({ where: { id } });
   revalidatePath("/admin/settings");
+  revalidatePath("/admin/calendar");
 }
