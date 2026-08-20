@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { StepIndicator } from "@/components/booking/step-indicator";
 import { StepSelectService } from "@/components/booking/step-select-service";
+import { StepProjectDetails } from "@/components/booking/step-project-details";
 import type { ServiceOption, WizardData } from "@/components/booking/types";
 import { INITIAL_WIZARD_DATA } from "@/components/booking/types";
 
@@ -31,6 +32,15 @@ export function BookingWizard({ services }: { services: ServiceOption[] }) {
           data={data}
           updateData={updateData}
           goNext={goNext}
+        />
+      )}
+      {step === 2 && (
+        <StepProjectDetails
+          service={services.find((s) => s.id === data.serviceId)!}
+          data={data}
+          updateData={updateData}
+          goNext={goNext}
+          goBack={goBack}
         />
       )}
     </div>
