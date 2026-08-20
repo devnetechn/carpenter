@@ -53,7 +53,7 @@ export async function saveQuoteDraft(input: SaveQuoteDraftInput) {
         description: item.description,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        isOptional: item.isOptional,
+        isOptional: item.type === "OPTIONAL",
         isIncluded: item.isIncluded,
         sortOrder: index,
       })),
