@@ -5,6 +5,7 @@ import { getBusinessSettings } from "@/lib/settings";
 import { LeadStatusForm } from "@/components/admin/lead-status-form";
 import { LeadNotes } from "@/components/admin/lead-notes";
 import { QuoteBuilder } from "@/components/admin/quote-builder";
+import { ConvertToJobButton } from "@/components/admin/convert-to-job-button";
 import { Badge } from "@/components/ui/badge";
 
 export default async function LeadDetailPage({
@@ -30,6 +31,7 @@ export default async function LeadDetailPage({
         orderBy: { createdAt: "desc" },
         take: 1,
       },
+      jobs: { select: { id: true } },
     },
   });
 
@@ -156,6 +158,17 @@ export default async function LeadDetailPage({
             defaultDepositPercent={Number(settings.depositPercent)}
           />
         </div>
+        {latestQuote?.status === "ACCEPTED" && (
+          <div className="mt-4">
+            {lead.jobs.length > 0 ? (
+              <a href={`/admin/jobs/${lead.jobs[0].id}`} className="text-sm text-accent hover:underline">
+                View job
+              </a>
+            ) : (
+              <ConvertToJobButton quoteId={latestQuote.id} />
+            )}
+          </div>
+        )}
       </section>
 
       <section>
