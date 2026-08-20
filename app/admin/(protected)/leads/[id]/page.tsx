@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { resolveAnswerLabels } from "@/lib/lead-answers";
+import { getBusinessSettings } from "@/lib/settings";
 import { LeadStatusForm } from "@/components/admin/lead-status-form";
 import { LeadNotes } from "@/components/admin/lead-notes";
+import { QuoteBuilder } from "@/components/admin/quote-builder";
 import { Badge } from "@/components/ui/badge";
 
 export default async function LeadDetailPage({
@@ -23,12 +25,19 @@ export default async function LeadDetailPage({
         include: { adminUser: { select: { name: true } } },
         orderBy: { createdAt: "desc" },
       },
+      quotes: {
+        include: { items: { orderBy: { sortOrder: "asc" } } },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
     },
   });
 
   if (!lead) {
     notFound();
   }
+
+  const settings = await getBusinessSettings();
 
   const answers = resolveAnswerLabels(
     lead.service.questions,
@@ -41,6 +50,24 @@ export default async function LeadDetailPage({
     createdAt: note.createdAt,
     authorName: note.adminUser.name,
   }));
+
+  const latestQuote = lead.quotes[0] ?? null;
+  const quoteView = latestQuote
+    ? {
+        id: latestQuote.id,
+        status: latestQuote.status,
+        publicToken: latestQuote.publicToken,
+        discount: latestQuote.discount.toString(),
+        items: latestQuote.items.map((item) => ({
+          type: item.type,
+          description: item.description,
+          quantity: item.quantity.toString(),
+          unitPrice: item.unitPrice.toString(),
+          isOptional: item.isOptional,
+          isIncluded: item.isIncluded,
+        })),
+      }
+    : null;
 
   return (
     <div className="space-y-8">
@@ -117,6 +144,18 @@ export default async function LeadDetailPage({
             ))}
           </ul>
         )}
+      </section>
+
+      <section>
+        <h2 className="text-sm font-semibold uppercase text-muted-foreground">Quote</h2>
+        <div className="mt-2">
+          <QuoteBuilder
+            leadId={lead.id}
+            existingQuote={quoteView}
+            defaultTaxRate={Number(settings.taxRate)}
+            defaultDepositPercent={Number(settings.depositPercent)}
+          />
+        </div>
       </section>
 
       <section>
