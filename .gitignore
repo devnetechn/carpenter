@@ -46,3 +46,6 @@ next-env.d.ts
 # local file uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# playwright MCP debug artifacts
+/.playwright-mcp/
