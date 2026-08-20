@@ -42,6 +42,17 @@ async function main() {
     ],
   });
 
+  // Delete everything that references Service/Lead before recreating
+  // services, so re-running the seed never hits a foreign key violation.
+  await prisma.review.deleteMany();
+  await prisma.job.deleteMany();
+  await prisma.leadNote.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.projectPhoto.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.lead.deleteMany();
+  await prisma.customer.deleteMany();
+
   await prisma.serviceQuestion.deleteMany();
   await prisma.service.deleteMany();
 
@@ -85,9 +96,6 @@ async function main() {
       { serviceId: created["custom-cabinets"], label: "Desired finish", fieldType: ServiceQuestionFieldType.TEXT, required: false, sortOrder: 5 },
     ],
   });
-
-  await prisma.review.deleteMany();
-  await prisma.job.deleteMany();
 
   const featuredProjects = [
     {
