@@ -210,6 +210,7 @@ model Lead {
   budgetMax    Decimal?      @db.Decimal(10, 2)
   notes        String?
   source       String        @default("website")
+  preferredContact String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   project      Project?
