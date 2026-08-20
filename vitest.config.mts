@@ -5,6 +5,10 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["./tests/setup.ts"],
+    // Integration tests share one real Postgres test database and reset
+    // shared tables (e.g. BusinessSettings) between cases — running test
+    // files in parallel causes cross-file races against that shared state.
+    fileParallelism: false,
   },
   resolve: {
     alias: { "@": path.resolve(import.meta.dirname, ".") },
