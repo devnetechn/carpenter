@@ -42,8 +42,11 @@ async function main() {
     ],
   });
 
-  // Delete everything that references Service/Lead before recreating
-  // services, so re-running the seed never hits a foreign key violation.
+  // Delete everything that references Service/Lead/AdminUser before
+  // recreating them, so re-running the seed never hits a foreign key
+  // violation — including admin-generated data (AuditLog, LeadNote) that
+  // accumulates from using the admin dashboard between seed runs.
+  await prisma.auditLog.deleteMany();
   await prisma.review.deleteMany();
   await prisma.job.deleteMany();
   await prisma.leadNote.deleteMany();

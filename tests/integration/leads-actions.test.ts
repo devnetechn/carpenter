@@ -72,6 +72,25 @@ describe("lead admin actions", () => {
     expect(result.error).not.toBeNull();
   });
 
+  it("fails gracefully, without changing the lead, when the session references a deleted admin user", async () => {
+    const lead = await seedLead();
+    const staleId = adminUserId;
+    await prisma.adminUser.delete({ where: { id: staleId } });
+
+    const result = await updateLeadStatus(lead.id, "CONTACTED");
+    expect(result.error).not.toBeNull();
+
+    const unchanged = await prisma.lead.findUniqueOrThrow({ where: { id: lead.id } });
+    expect(unchanged.status).toBe("NEW");
+
+    // Recreate for afterEach/afterAll cleanup expectations elsewhere in this file.
+    adminUserId = (
+      await prisma.adminUser.create({
+        data: { email: "leads-test-admin@example.com", name: "Admin", passwordHash: "x" },
+      })
+    ).id;
+  });
+
   it("adds a note tied to the current admin user", async () => {
     const lead = await seedLead();
     const result = await addLeadNote(lead.id, "Called, left voicemail.");
