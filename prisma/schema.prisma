@@ -311,6 +311,7 @@ model Job {
   customerId     String
   customer       Customer      @relation(fields: [customerId], references: [id])
   status         JobStatus     @default(SCHEDULED)
+  featuredOnWebsite Boolean    @default(false)
   scopeOfWork    String
   addressStreet  String
   addressCity    String
