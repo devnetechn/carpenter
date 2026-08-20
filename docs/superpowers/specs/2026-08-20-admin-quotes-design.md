@@ -62,6 +62,22 @@ one is unnecessary: "request changes" in practice means "the admin goes
 back into the draft, adjusts items, and re-sends" — the existing
 DRAFT-edit-SENT cycle already models that without a new state.
 
+"Request Changes" does not transition `Quote.status` at all — it stays
+`SENT`/`VIEWED`. The customer's message is delivered to the admin via a
+queued `Notification` (a new `QUOTE_CHANGES_REQUESTED` type — see below),
+**not** a `LeadNote`: `LeadNote.adminUserId` is required and the
+admin-leads cycle established notes as admin-authored only, so writing a
+customer's free-text message into that table would require inventing a
+fake admin author. The notification's body carries the message instead,
+consistent with how every other customer-originated event already flows
+through `Notification` in this app (the contact form, the booking
+wizard). Declining also needs its own notification type — the foundation
+schema's `NotificationType` enum has `QUOTE_SENT` and `QUOTE_ACCEPTED`
+but no decline/changes-requested equivalents. This cycle adds
+`QUOTE_DECLINED` and `QUOTE_CHANGES_REQUESTED` to that enum — a small,
+additive migration, the same kind already done for `Lead.preferredContact`
+in the admin-leads cycle.
+
 `EXPIRED` (already in the schema's `QuoteStatus` enum) is set lazily:
 the public view checks `expiresAt` on load and treats an expired-but-
 still-SENT quote as expired for display purposes, without a background
