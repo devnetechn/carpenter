@@ -8,12 +8,15 @@ import { StepPhotos } from "@/components/booking/step-photos";
 import { StepAddress } from "@/components/booking/step-address";
 import { StepBudget } from "@/components/booking/step-budget";
 import { StepSchedule } from "@/components/booking/step-schedule";
+import { StepCustomerInfo } from "@/components/booking/step-customer-info";
+import { StepConfirmation } from "@/components/booking/step-confirmation";
 import type { ServiceOption, WizardData } from "@/components/booking/types";
 import { INITIAL_WIZARD_DATA } from "@/components/booking/types";
 
 export function BookingWizard({ services }: { services: ServiceOption[] }) {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<WizardData>(INITIAL_WIZARD_DATA);
+  const [bookingRef, setBookingRef] = useState<string | null>(null);
 
   function updateData(patch: Partial<WizardData>) {
     setData((prev) => ({ ...prev, ...patch }));
@@ -58,6 +61,24 @@ export function BookingWizard({ services }: { services: ServiceOption[] }) {
       )}
       {step === 6 && (
         <StepSchedule data={data} updateData={updateData} goNext={goNext} goBack={goBack} />
+      )}
+      {step === 7 && !bookingRef && (
+        <StepCustomerInfo
+          data={data}
+          updateData={updateData}
+          goBack={goBack}
+          onSubmitted={(ref) => {
+            setBookingRef(ref);
+            setStep(8);
+          }}
+        />
+      )}
+      {step === 8 && bookingRef && (
+        <StepConfirmation
+          service={services.find((s) => s.id === data.serviceId)}
+          data={data}
+          bookingRef={bookingRef}
+        />
       )}
     </div>
   );

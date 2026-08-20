@@ -1,25 +1,27 @@
-import Link from "next/link";
-import { getBusinessSettings } from "@/lib/settings";
-import { Button } from "@/components/ui/button";
+import { prisma } from "@/lib/db";
+import { BookingWizard } from "@/components/booking/booking-wizard";
+import type { ServiceOption } from "@/components/booking/types";
 
-export default async function QuoteStubPage() {
-  const settings = await getBusinessSettings();
+export default async function QuotePage() {
+  const rawServices = await prisma.service.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+    include: { questions: { orderBy: { sortOrder: "asc" } } },
+  });
 
-  return (
-    <div className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 text-center">
-      <h1 className="font-serif text-3xl font-semibold">Our online booking wizard is almost ready</h1>
-      <p className="mt-4 text-muted-foreground">
-        In the meantime, call or email us directly and we&apos;ll get your project scheduled.
-      </p>
-      <div className="mt-6 space-y-1 text-sm">
-        <p className="font-medium">{settings.phone}</p>
-        <p className="font-medium">{settings.email}</p>
-      </div>
-      <div className="mt-8">
-        <Button variant="outline" nativeButton={false} render={<Link href="/contact" />}>
-          Send a Message Instead
-        </Button>
-      </div>
-    </div>
-  );
+  const services: ServiceOption[] = rawServices.map((service) => ({
+    id: service.id,
+    name: service.name,
+    slug: service.slug,
+    description: service.description,
+    questions: service.questions.map((q) => ({
+      id: q.id,
+      label: q.label,
+      fieldType: q.fieldType,
+      options: (q.options as string[] | null) ?? null,
+      required: q.required,
+    })),
+  }));
+
+  return <BookingWizard services={services} />;
 }
