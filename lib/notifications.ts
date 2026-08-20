@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { emailProvider } from "@/lib/email-provider";
 import type { NotificationType } from "@/lib/generated/prisma/client";
 
 export interface QueueNotificationInput {
@@ -11,7 +12,7 @@ export interface QueueNotificationInput {
 }
 
 export async function queueNotification(input: QueueNotificationInput) {
-  return prisma.notification.create({
+  const notification = await prisma.notification.create({
     data: {
       type: input.type,
       recipientEmail: input.recipientEmail,
@@ -21,4 +22,24 @@ export async function queueNotification(input: QueueNotificationInput) {
       relatedEntityId: input.relatedEntityId,
     },
   });
+
+  const result = await emailProvider.send({
+    to: input.recipientEmail,
+    subject: input.subject,
+    body: input.body,
+  });
+
+  if (result.status === "sent") {
+    return prisma.notification.update({
+      where: { id: notification.id },
+      data: { status: "SENT", sentAt: new Date() },
+    });
+  }
+  if (result.status === "failed") {
+    return prisma.notification.update({
+      where: { id: notification.id },
+      data: { status: "FAILED" },
+    });
+  }
+  return notification;
 }
