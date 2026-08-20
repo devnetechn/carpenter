@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cancelAppointment, rescheduleAppointment } from "@/app/admin/(protected)/calendar/actions";
 
+function toLocalDatetimeInputValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function AppointmentActions({
   appointmentId,
   currentStart,
@@ -38,10 +44,20 @@ export function AppointmentActions({
         }
         className="mt-2 space-y-2"
       >
-        <Input name="start" type="datetime-local" defaultValue={currentStart.slice(0, 16)} required />
-        <Input name="end" type="datetime-local" defaultValue={currentEnd.slice(0, 16)} required />
+        <Input
+          name="start"
+          type="datetime-local"
+          defaultValue={toLocalDatetimeInputValue(currentStart)}
+          required
+        />
+        <Input
+          name="end"
+          type="datetime-local"
+          defaultValue={toLocalDatetimeInputValue(currentEnd)}
+          required
+        />
         {error && <p className="text-red-600">{error}</p>}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button type="submit" size="sm" disabled={isPending}>
             Save
           </Button>
@@ -54,7 +70,7 @@ export function AppointmentActions({
   }
 
   return (
-    <div className="mt-2 flex gap-2">
+    <div className="mt-2 flex flex-wrap gap-2">
       <Button type="button" size="sm" variant="outline" onClick={() => setRescheduling(true)}>
         Reschedule
       </Button>

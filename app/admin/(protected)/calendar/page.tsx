@@ -129,7 +129,7 @@ export default async function CalendarPage({
         style={{ gridTemplateColumns: `repeat(${daysInView}, minmax(0, 1fr))` }}
       >
         {days.map((day) => (
-          <div key={day.dayIndex} className="rounded-lg border p-3">
+          <div key={day.dayIndex} className="min-w-0 rounded-lg border p-3">
             <p className="text-sm font-semibold">
               {DAY_NAMES[day.date.getUTCDay()]} {day.date.getUTCMonth() + 1}/{day.date.getUTCDate()}
             </p>
