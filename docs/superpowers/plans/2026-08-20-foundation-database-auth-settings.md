@@ -29,7 +29,7 @@
 **Interfaces:**
 - Produces: a runnable Next.js 15 + TypeScript + Tailwind project at the repo root, with git initialized.
 
-- [ ] **Step 1: Scaffold the Next.js app**
+- [x] **Step 1: Scaffold the Next.js app**
 
 ```bash
 npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias "@/*" --use-npm --yes
