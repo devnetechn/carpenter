@@ -1,3 +1,6 @@
+import { prisma } from "@/lib/db";
+import { getBusinessSettings } from "@/lib/settings";
+
 export interface AvailableSlot {
   start: Date;
   end: Date;
@@ -55,4 +58,37 @@ export function computeAvailableSlots(
   }
 
   return slots;
+}
+
+export async function getAvailableSlots(
+  rangeStart: Date,
+  rangeEnd: Date
+): Promise<AvailableSlot[]> {
+  const [hours, settings, appointments, blockedTimes] = await Promise.all([
+    prisma.businessHours.findMany(),
+    getBusinessSettings(),
+    prisma.appointment.findMany({
+      where: {
+        status: { not: "CANCELLED" },
+        start: { lt: rangeEnd },
+        end: { gt: rangeStart },
+      },
+    }),
+    prisma.blockedTime.findMany({
+      where: { start: { lt: rangeEnd }, end: { gt: rangeStart } },
+    }),
+  ]);
+
+  const busy: BusyWindow[] = [
+    ...appointments.map((a) => ({ start: a.start, end: a.end })),
+    ...blockedTimes.map((b) => ({ start: b.start, end: b.end })),
+  ];
+
+  return computeAvailableSlots(
+    hours,
+    busy,
+    settings.defaultAppointmentDurationMin,
+    rangeStart,
+    rangeEnd
+  );
 }
