@@ -5,6 +5,7 @@ import { StepIndicator } from "@/components/booking/step-indicator";
 import { StepSelectService } from "@/components/booking/step-select-service";
 import { StepProjectDetails } from "@/components/booking/step-project-details";
 import { StepPhotos } from "@/components/booking/step-photos";
+import { StepAddress } from "@/components/booking/step-address";
 import type { ServiceOption, WizardData } from "@/components/booking/types";
 import { INITIAL_WIZARD_DATA } from "@/components/booking/types";
 
@@ -46,6 +47,9 @@ export function BookingWizard({ services }: { services: ServiceOption[] }) {
       )}
       {step === 3 && (
         <StepPhotos data={data} updateData={updateData} goNext={goNext} goBack={goBack} />
+      )}
+      {step === 4 && (
+        <StepAddress data={data} updateData={updateData} goNext={goNext} goBack={goBack} />
       )}
     </div>
   );
