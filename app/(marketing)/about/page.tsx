@@ -8,19 +8,19 @@ export default async function AboutPage() {
       <h1 className="font-serif text-3xl font-semibold">About {settings.name}</h1>
       <div className="mt-8 space-y-6 text-muted-foreground">
         <p>
-          {settings.name} is a family-owned carpentry business built on a simple idea:
-          do the work right, even the parts no one will ever see. Every project, from a
-          small repair to a full remodel, gets the same attention to detail and honest
-          communication from first estimate to final walkthrough.
+          {settings.name} provides services for all phases of home improvement,
+          including additions, kitchens, bathrooms, decks, finished basements, and
+          millwork. We&apos;ve served homeowners in {settings.addressCity} County and
+          the surrounding area with fairness, honesty, and integrity for over 15 years.
         </p>
         <p>
-          We&apos;re licensed and insured, and we stand behind every job we finish. Our
-          crew works in {settings.addressCity} and the surrounding area, and we keep our
-          project list intentionally manageable so every client gets real attention, not
-          just a spot in a queue.
+          We keep our project list intentionally manageable so every client gets real,
+          hands-on attention rather than a spot in a queue. Big or small, your project
+          is customized to fit your style and budget, from first consultation to final
+          walkthrough.
         </p>
         <p>
-          Whether you need a single built-in or a structural remodel, we handle the
+          Whether you need a single addition or a full kitchen remodel, we handle the
           project the same way: a clear scope, a fair price, and a finished result that
           holds up for years, not just until the next inspection.
         </p>

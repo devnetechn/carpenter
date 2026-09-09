@@ -36,6 +36,7 @@ export async function submitBookingAction(input: SubmitBookingInput) {
 
   const settings = await getBusinessSettings();
   const withinServiceArea = isWithinServiceArea(data.addressZip, settings.serviceAreaZips);
+  const newBookingRef = await generateBookingRef();
 
   let bookingRef: string;
   let leadId: string;
@@ -71,7 +72,7 @@ export async function submitBookingAction(input: SubmitBookingInput) {
 
       const lead = await tx.lead.create({
         data: {
-          bookingRef: await generateBookingRef(),
+          bookingRef: newBookingRef,
           customerId: customer.id,
           serviceId: data.serviceId,
           status: "NEW",
