@@ -16,9 +16,8 @@ export function SiteFooter({ settings }: { settings: BusinessSettings }) {
         <div>
           <p className="font-serif text-lg font-semibold">{settings.name}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {settings.addressStreet}
-            <br />
-            {settings.addressCity}, {settings.addressState} {settings.addressZip}
+            Serving {settings.addressCity} County, {settings.addressState} and the
+            surrounding area
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             {settings.phone} &middot; {settings.email}

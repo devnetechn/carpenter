@@ -104,10 +104,10 @@ function DefaultPattern() {
 }
 
 const PATTERNS: Record<string, () => React.ReactElement> = {
-  "deck-construction": DeckPattern,
-  "custom-cabinets": CabinetPattern,
-  "built-ins": BuiltInPattern,
-  remodeling: RemodelPattern,
+  decks: DeckPattern,
+  "kitchens-baths": CabinetPattern,
+  millwork: BuiltInPattern,
+  additions: RemodelPattern,
 };
 
 export function ProjectArt({

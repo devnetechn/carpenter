@@ -16,8 +16,8 @@ export default async function ContactPage() {
           <p>{settings.phone}</p>
           <p>{settings.email}</p>
           <p>
-            {settings.addressStreet}, {settings.addressCity}, {settings.addressState}{" "}
-            {settings.addressZip}
+            Serving {settings.addressCity} County, {settings.addressState} and the
+            surrounding area
           </p>
         </div>
       </div>
